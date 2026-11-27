@@ -1,6 +1,6 @@
 <p align="center"><img src="replynoti.png" width="96" alt="ReplyNoti 로고"></p>
 <h1 align="center">ReplyNoti</h1>
-<p align="center"><strong>답변이 준비되면 알려드립니다.</strong><br>ChatGPT 응답 생성이 끝나면 Windows 알림을 보내는 작은 유틸리티입니다.</p>
+<p align="center"><strong>답변이 준비되면 알려드립니다.</strong><br>ChatGPT Chat 응답 생성이 끝나면 Windows 알림을 보내는 작은 유틸리티입니다.</p>
 <p align="center"><a href="README.md">English</a> · 한국어</p>
 <p align="center">
 <a href="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
