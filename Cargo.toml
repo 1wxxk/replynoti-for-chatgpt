@@ -1,0 +1,25 @@
+[package]
+name = "replynoti"
+version = "0.1.0-beta.7"
+edition = "2024"
+rust-version = "1.88"
+license = "MIT"
+description = "Local Windows notification helper for ChatGPT desktop generation status"
+
+[dependencies]
+regex = "1"
+image = { version = "=0.25.9", default-features = false, features = ["png", "ico"] }
+windows = { version = "=0.62.2", features = [
+ "Foundation", "Data_Xml_Dom", "UI_Notifications",
+ "Win32_Foundation", "Win32_Globalization", "Win32_Security", "Win32_System_Com",
+ "Win32_System_Ole", "Win32_System_Variant", "Win32_System_WinRT",
+ "Win32_System_Registry", "Win32_System_Threading",
+ "Win32_System_RemoteDesktop", "Win32_UI_Accessibility",
+ "Win32_UI_WindowsAndMessaging", "Win32_UI_Shell", "Win32_UI_Controls_Dialogs",
+ "Win32_Graphics_Gdi", "Win32_System_LibraryLoader", "Win32_Media_Audio"
+] }
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = true

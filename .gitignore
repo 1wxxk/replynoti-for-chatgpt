@@ -1,0 +1,25 @@
+/target/
+/dist/
+*.log
+probe.txt
+*.zip
+*.exe
+.env*
+*.pfx
+*.wfw
+
+/settings-ui/node_modules/
+/settings-ui/dist/
+/settings-ui/src-tauri/target/
+/settings-ui/src-tauri/gen/
+
+# Local user data and diagnostics
+config.toml
+custom-icon.*
+custom-sound.wav
+click-tickets/
+stop.flag
+.donechime-install
+.replynoti-install
+*.pem
+*.key

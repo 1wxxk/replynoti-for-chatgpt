@@ -1,0 +1,42 @@
+name: Windows build and checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-x64:
+    runs-on: windows-latest
+    env:
+      RUSTFLAGS: "-C target-feature=+crt-static"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust stable
+        run: |
+          rustup update stable
+          rustup default stable
+          rustc --version
+      - name: Format
+        run: cargo fmt --check
+      - name: Tests
+        run: cargo test --release --locked
+      - name: Build
+        run: cargo build --release --locked
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: settings-ui/package-lock.json
+      - name: Settings frontend
+        working-directory: settings-ui
+        run: |
+          npm ci
+          npm run build
+      - name: Settings binary
+        working-directory: settings-ui/src-tauri
+        run: cargo build --release --locked
+      # Source-first beta: do not publish packaged binaries until the release gates are met.
