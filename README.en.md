@@ -15,17 +15,29 @@ Start a reply, switch to another task, and let ReplyNoti tell you when generatio
 
 ## Download
 
-[**Windows Setup EXE (recommended)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Setup-x64.exe) · [Portable ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Portable-x64.zip) · [Release notes](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.8)
+[**Windows Setup EXE (recommended)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Setup-x64.exe) · [Portable ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Portable-x64.zip) · [Release notes](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.9)
 
-Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution. Verify [SHA-256 checksums](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/SHA256SUMS.txt) and respect your system security policy. No Rust or Node.js installation is needed.
+Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution. Verify [SHA-256 checksums](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/SHA256SUMS.txt) and respect your system security policy. No Rust or Node.js installation is needed.
 
 ## Preview
 
-<p align="center"><img src="docs/screenshots/settings-en-light.png" width="720" alt="ReplyNoti English light theme"></p>
+### Notification settings
 
-<p align="center"><img src="docs/screenshots/settings-ko-dark.png" width="720" alt="ReplyNoti Korean dark theme"></p>
+<p align="center"><img src="docs/screenshots/settings-en-light.png" width="820" alt="ReplyNoti English light theme notification settings"></p>
 
-Screenshots use the settings UI's built-in demo data.
+### Dark theme
+
+<p align="center"><img src="docs/screenshots/settings-ko-dark.png" width="820" alt="ReplyNoti Korean dark theme notification settings"></p>
+
+### Appearance
+
+<p align="center"><img src="docs/screenshots/settings-appearance-en.png" width="820" alt="ReplyNoti icon and theme settings"></p>
+
+### Installer
+
+<p align="center"><img src="docs/screenshots/installer-ko.png" width="668" alt="ReplyNoti installer options"></p>
+
+Settings screenshots use the actual UI with built-in demo data. The installer screenshot shows the real upgrade options.
 
 ## Quick start
 

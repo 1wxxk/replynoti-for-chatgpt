@@ -15,17 +15,29 @@ ChatGPT Chat에 질문한 뒤 답변이 끝날 때까지 기다릴 필요 없습
 
 ## 다운로드
 
-[**Windows 설치형 EXE (권장)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Setup-x64.exe) · [포터블 ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Portable-x64.zip) · [릴리스 노트](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.8)
+[**Windows 설치형 EXE (권장)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Setup-x64.exe) · [포터블 ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Portable-x64.zip) · [릴리스 노트](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.9)
 
-Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로 Windows 보안 경고가 나타나거나 실행이 차단될 수 있습니다. [SHA-256](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/SHA256SUMS.txt)으로 무결성을 확인하고 시스템 보안 정책을 준수하세요. 일반 사용자는 Rust나 Node.js 설치가 필요 없습니다.
+Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로 Windows 보안 경고가 나타나거나 실행이 차단될 수 있습니다. [SHA-256](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/SHA256SUMS.txt)으로 무결성을 확인하고 시스템 보안 정책을 준수하세요. 일반 사용자는 Rust나 Node.js 설치가 필요 없습니다.
 
 ## 화면 미리보기
 
-<p align="center"><img src="docs/screenshots/settings-ko-dark.png" width="720" alt="ReplyNoti 한국어 다크 테마"></p>
+### 알림 설정
 
-<p align="center"><img src="docs/screenshots/settings-en-light.png" width="720" alt="ReplyNoti 영어 라이트 테마"></p>
+<p align="center"><img src="docs/screenshots/settings-ko-dark.png" width="820" alt="ReplyNoti 한국어 다크 테마 알림 설정"></p>
 
-설정창 내장 데모 데이터를 사용한 화면입니다.
+### 라이트 테마
+
+<p align="center"><img src="docs/screenshots/settings-en-light.png" width="820" alt="ReplyNoti 영어 라이트 테마 알림 설정"></p>
+
+### 외관 설정
+
+<p align="center"><img src="docs/screenshots/settings-appearance-en.png" width="820" alt="ReplyNoti 아이콘 및 테마 설정"></p>
+
+### 설치 화면
+
+<p align="center"><img src="docs/screenshots/installer-ko.png" width="668" alt="ReplyNoti 설치 옵션 화면"></p>
+
+설정 화면은 실제 UI의 내장 데모 데이터를 사용했습니다. 설치 화면은 실제 설치 프로그램의 업데이트 화면입니다.
 
 ## 빠른 시작
 

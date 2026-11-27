@@ -73,3 +73,7 @@ EXE and portable registration flows passed isolated-name smoke tests on the deve
 ## Foreground suppression
 
 Background-only mode treats the watched window, its owned windows, the same process, and other recognized official ChatGPT windows as foreground. A different foreground window must remain consistently observed for at least 600 ms before delivery; unknown focus holds rather than sends. Focus and current settings are rechecked immediately before Windows toast submission and before a custom notification sound. Manual test notifications intentionally bypass the mode. A focus change after Windows accepts a toast cannot retroactively prevent its display. Regression tests cover classification, transient switches, returning to ChatGPT, and smart/always policy; a live reproduction of the reported false-positive scenario is still pending.
+
+## Beta.9 visual and installer changes
+
+The application icon is a new scalable, original chat-bubble and notification-dot design. The native NSIS installer consolidates the options into one branded screen, keeping the fixed per-user path. Fresh installs can choose reply previews and startup; upgrades preserve preferences and custom assets unless startup is explicitly changed. The UI was captured on an isolated desktop. Clean install, settings-preserving upgrade, uninstall and portable registration smoke tests passed with a separate identity. Live notification regression testing on another PC remains pending.

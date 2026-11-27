@@ -1,10 +1,11 @@
 [CmdletBinding()]
-param([switch]$AutoStart,[switch]$NoStart,[switch]$Preview,[switch]$NoPreview,[switch]$Portable,[switch]$Upgrade,[string]$PortableRoot)
+param([switch]$AutoStart,[switch]$NoAutoStart,[switch]$NoStart,[switch]$Preview,[switch]$NoPreview,[switch]$Portable,[switch]$Upgrade,[string]$PortableRoot)
 $ErrorActionPreference='Stop'
 $root=Join-Path $env:LOCALAPPDATA 'ReplyNoti'
 if($Portable){if($PortableRoot){$root=(Resolve-Path -LiteralPath $PortableRoot -ErrorAction Stop).Path}else{$root=$PSScriptRoot};if(!(Test-Path (Join-Path $root 'portable.flag') -PathType Leaf)){throw 'Portable package marker missing.'}}
 $payload=if($Portable){$root}else{$PSScriptRoot}
 if($Portable -and $Upgrade){throw 'Choose either portable registration or installed update.'}
+if($AutoStart -and $NoAutoStart){throw 'Choose either -AutoStart or -NoAutoStart.'}
 if($Preview -and $NoPreview){throw 'Choose either -Preview or -NoPreview.'}
 $marker=Join-Path $root '.replynoti-install'
 $appId='ReplyNoti.Notifier'
@@ -45,7 +46,7 @@ function Register-Uninstall {
  $u=Join-Path $root 'Uninstall.exe'
  if(!(Test-Path $u)){return}
  New-Item -Path $arp -Force|Out-Null
- $properties=@{DisplayName='ReplyNoti';DisplayVersion='0.1.0-beta.8';Publisher='ReplyNoti contributors';InstallLocation=$root;DisplayIcon=(Join-Path $root 'replynoti.ico');UninstallString=('"'+$u+'"');QuietUninstallString=('"'+$u+'" /S');URLInfoAbout='https://github.com/1wxxk/replynoti-for-chatgpt'}
+ $properties=@{DisplayName='ReplyNoti';DisplayVersion='0.1.0-beta.9';Publisher='ReplyNoti contributors';InstallLocation=$root;DisplayIcon=(Join-Path $root 'replynoti.ico');UninstallString=('"'+$u+'"');QuietUninstallString=('"'+$u+'" /S');URLInfoAbout='https://github.com/1wxxk/replynoti-for-chatgpt'}
  foreach($k in $properties.Keys){New-ItemProperty -Path $arp -Name $k -Value $properties[$k] -PropertyType String -Force|Out-Null}
  foreach($k in @('NoModify','NoRepair')){New-ItemProperty -Path $arp -Name $k -Value 1 -PropertyType DWord -Force|Out-Null}
 }
@@ -70,6 +71,7 @@ if(Test-Path $marker){
   foreach($n in $files.Keys){$target=Join-Path $root $n;if(Test-Path $target){Move-Item -LiteralPath $target -Destination (Join-Path $backup $n)};$swapped+=$n;Move-Item -LiteralPath (Join-Path $stage $n) -Destination $target}
   Register-Uninstall
   if($AutoStart){New-ItemProperty -Path $runKey -Name $runName -Value $expectedRun -PropertyType String -Force|Out-Null}
+  elseif($NoAutoStart){Remove-ItemProperty -LiteralPath $runKey -Name $runName -ErrorAction SilentlyContinue}
   Remove-Item -LiteralPath (Join-Path $root 'stop.flag') -ErrorAction SilentlyContinue
   if(!$NoStart){Start-Process -FilePath $dest -ArgumentList '--run' -WorkingDirectory $root}
  } catch {

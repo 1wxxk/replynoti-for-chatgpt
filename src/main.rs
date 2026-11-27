@@ -1139,7 +1139,7 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
     log(
         root,
         &format!(
-            "START mode={} pid={} v0.1.0-beta.8",
+            "START mode={} pid={} v0.1.0-beta.9",
             if shadow { "shadow" } else { "production" },
             std::process::id()
         ),
