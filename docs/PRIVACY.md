@@ -10,7 +10,7 @@ The implementation is unofficial. Users should review the applicable service ter
 
 ## Smart notification timing
 
-The watcher checks the foreground window handle and the Windows last-input timestamp locally. It does not record individual keyboard or mouse events, input contents, or input history. Deferred alerts retain only the tracked turn identity and timestamps in memory, expire after five minutes, and are not persisted.
+The watcher checks foreground window handles, their owner relationship and process identity (only to classify whether the official ChatGPT app is foreground), and the Windows last-input timestamp locally. It records the classification and delivery decision, not the foreground application's name, executable path, window title, or input contents. It does not record individual keyboard or mouse events, input contents, or input history. Deferred alerts retain only the tracked turn identity and timestamps in memory, expire after five minutes, and are not persisted.
 
 ## Notification activation
 

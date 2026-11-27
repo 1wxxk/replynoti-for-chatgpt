@@ -69,3 +69,7 @@ Known resources in the publisher-identified unified Windows package are supporte
 ## Beta.8 distribution
 
 EXE and portable registration flows passed isolated-name smoke tests on the development host. Independent clean Windows 11 PC, live notification and GUI installer visual tests remain unverified. Portable mode stores settings beside the executables; Windows notification and shortcut registration are still required.
+
+## Foreground suppression
+
+Background-only mode treats the watched window, its owned windows, the same process, and other recognized official ChatGPT windows as foreground. A different foreground window must remain consistently observed for at least 600 ms before delivery; unknown focus holds rather than sends. Focus and current settings are rechecked immediately before Windows toast submission and before a custom notification sound. Manual test notifications intentionally bypass the mode. A focus change after Windows accepts a toast cannot retroactively prevent its display. Regression tests cover classification, transient switches, returning to ChatGPT, and smart/always policy; a live reproduction of the reported false-positive scenario is still pending.

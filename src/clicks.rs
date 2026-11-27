@@ -274,6 +274,12 @@ impl Clicks {
         );
         Some(format!("{PREFIX}{id}"))
     }
+    pub(super) fn revoke(&mut self, uri: &str) {
+        if let Some(id) = token_from_uri(uri) {
+            self.tickets.remove(id);
+            let _ = fs::remove_file(self.dir.join(format!("{id}.pending")));
+        }
+    }
     pub(super) fn drain(&mut self, root: &Path, o: &Observer) {
         let mut done = Vec::new();
         for (id, t) in &self.tickets {

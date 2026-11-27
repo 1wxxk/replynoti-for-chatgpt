@@ -247,6 +247,25 @@ fn mutex() -> Option<Handle> {
     let h = Handle(h);
     if exists { None } else { Some(h) }
 }
+fn window_pid(h: HWND) -> Option<u32> {
+    if h.0.is_null() {
+        return None;
+    }
+    let mut pid = 0;
+    let tid = unsafe { GetWindowThreadProcessId(h, Some(&mut pid)) };
+    (tid != 0 && pid != 0).then_some(pid)
+}
+fn official_chatgpt_process(pid: u32) -> Option<bool> {
+    unsafe {
+        let p = Handle(OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?);
+        let mut buf = vec![0u16; 32768];
+        let mut len = buf.len() as u32;
+        QueryFullProcessImageNameW(p.0, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len)
+            .ok()?;
+        let path = String::from_utf16_lossy(&buf[..len as usize]).to_lowercase();
+        Some(path.contains("\\windowsapps\\openai.codex_") && path.ends_with("\\app\\chatgpt.exe"))
+    }
+}
 fn valid_window(h: HWND) -> bool {
     unsafe {
         if !IsWindowVisible(h).as_bool() {
@@ -257,22 +276,8 @@ fn valid_window(h: HWND) -> bool {
         if n <= 0 || String::from_utf16_lossy(&title[..n as usize]) != "ChatGPT" {
             return false;
         }
-        let mut pid = 0;
-        GetWindowThreadProcessId(h, Some(&mut pid));
-        let Ok(p) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) else {
-            return false;
-        };
-        let p = Handle(p);
-        let mut buf = vec![0u16; 32768];
-        let mut len = buf.len() as u32;
-        if QueryFullProcessImageNameW(p.0, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len)
-            .is_err()
-        {
-            return false;
-        }
-        let path = String::from_utf16_lossy(&buf[..len as usize]).to_lowercase();
-        path.contains("\\windowsapps\\openai.codex_") && path.ends_with("\\app\\chatgpt.exe")
     }
+    window_pid(h).and_then(official_chatgpt_process) == Some(true)
 }
 fn windows() -> Vec<usize> {
     unsafe extern "system" fn collect(h: HWND, p: LPARAM) -> BOOL {
@@ -625,6 +630,16 @@ fn toast(
     preview: &str,
     launch: Option<&str>,
 ) -> std::result::Result<(), String> {
+    toast_guarded(root, test, verified, preview, launch, || Delivery::Send).map(|_| ())
+}
+fn toast_guarded(
+    root: &Path,
+    test: bool,
+    verified: bool,
+    preview: &str,
+    launch: Option<&str>,
+    mut guard: impl FnMut() -> Delivery,
+) -> std::result::Result<Delivery, String> {
     use windows::{
         Foundation::{IReference, PropertyValue},
         core::Interface,
@@ -637,11 +652,11 @@ fn toast(
     }
     let config = settings::Config::load(root);
     if !test && !config.enabled {
-        return Ok(());
+        return Ok(Delivery::Drop);
     }
     let _rt = WinRt::new().map_err(|e| format!("WINRT_{:08x}", e.code().0 as u32))?;
     let before = last_toast(&[APP_ID]);
-    let send = || -> Result<()> {
+    let mut send = || -> Result<Delivery> {
         let notifier = ToastNotificationManager::CreateToastNotifierWithId(&HSTRING::from(APP_ID))?;
         if let Ok(setting) = notifier.Setting() {
             if setting != NotificationSetting::Enabled {
@@ -718,24 +733,35 @@ fn toast(
         })?;
         let exp: IReference<DateTime> = exp.cast()?;
         t.SetExpirationTime(&exp)?;
+        let decision = guard();
+        if decision != Delivery::Send {
+            return Ok(decision);
+        }
         notifier.Show(&t)?;
-        Ok(())
+        Ok(Delivery::Send)
     };
-    send().map_err(|e| format!("TOAST_{:08x}", e.code().0 as u32))?;
+    let decision = send().map_err(|e| format!("TOAST_{:08x}", e.code().0 as u32))?;
+    if decision != Delivery::Send {
+        return Ok(decision);
+    }
     log(root, "TOAST_SUBMITTED");
     for _ in 0..12 {
         thread::sleep(Duration::from_millis(150));
         if last_toast(&[APP_ID]) > before {
             log(root, "TOAST_REGISTERED");
             if config.sound == "custom" {
-                settings::play_custom(root);
+                if guard() == Delivery::Send {
+                    settings::play_custom(root);
+                } else {
+                    log(root, "CUSTOM_SOUND_FOCUSED_SKIP");
+                }
             }
-            return Ok(());
+            return Ok(Delivery::Send);
         }
     }
     // Registry timing is an undocumented diagnostic, not a delivery guarantee.
     log(root, "TOAST_REGISTRATION_UNCONFIRMED");
-    Ok(())
+    Ok(Delivery::Send)
 }
 #[derive(Clone, Debug)]
 struct Active {
@@ -924,20 +950,92 @@ fn delivery(mode: &str, focused: Option<bool>, idle_ms: Option<u32>, threshold: 
         _ => Delivery::Hold,
     }
 }
-fn user_activity(h: usize) -> (Option<bool>, Option<u32>) {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum FocusReason {
+    SameWindow,
+    OwnedWindow,
+    SameProcess,
+    OfficialApp,
+    OtherApp,
+    Unknown,
+}
+impl FocusReason {
+    fn focused(self) -> Option<bool> {
+        match self {
+            Self::SameWindow | Self::OwnedWindow | Self::SameProcess | Self::OfficialApp => {
+                Some(true)
+            }
+            Self::OtherApp => Some(false),
+            Self::Unknown => None,
+        }
+    }
+}
+#[derive(Clone, Copy)]
+struct Activity {
+    foreground: usize,
+    reason: FocusReason,
+    idle: Option<u32>,
+}
+fn classify_focus(
+    same_window: bool,
+    same_owner: bool,
+    same_process: bool,
+    official: Option<bool>,
+) -> FocusReason {
+    if same_window {
+        FocusReason::SameWindow
+    } else if same_owner {
+        FocusReason::OwnedWindow
+    } else if same_process {
+        FocusReason::SameProcess
+    } else {
+        match official {
+            Some(true) => FocusReason::OfficialApp,
+            Some(false) => FocusReason::OtherApp,
+            None => FocusReason::Unknown,
+        }
+    }
+}
+fn user_activity(h: usize) -> Activity {
     use windows::Win32::{
         System::SystemInformation::GetTickCount,
         UI::{
             Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO},
-            WindowsAndMessaging::GetForegroundWindow,
+            WindowsAndMessaging::{GA_ROOTOWNER, GetAncestor, GetForegroundWindow},
         },
     };
     unsafe {
+        let watched = HWND(h as *mut c_void);
         let foreground = GetForegroundWindow();
-        let focused = if foreground.0.is_null() {
-            None
+        let reason = if foreground.0.is_null() || window_pid(watched).is_none() {
+            FocusReason::Unknown
         } else {
-            Some(foreground.0 as usize == h)
+            let owner = GetAncestor(foreground, GA_ROOTOWNER);
+            let watched_owner = GetAncestor(watched, GA_ROOTOWNER);
+            let fg_pid = window_pid(foreground);
+            let watched_pid = window_pid(watched);
+            let owner_pid = window_pid(owner);
+            let same_window = foreground == watched;
+            let same_owner =
+                !owner.0.is_null() && !watched_owner.0.is_null() && owner == watched_owner;
+            let same_process =
+                watched_pid.is_some_and(|pid| fg_pid == Some(pid) || owner_pid == Some(pid));
+            let official = if same_window || same_owner || same_process {
+                None
+            } else {
+                let fg = fg_pid.and_then(official_chatgpt_process);
+                let root_owner = if owner == foreground {
+                    fg
+                } else {
+                    owner_pid.and_then(official_chatgpt_process)
+                };
+                match (fg, root_owner) {
+                    (Some(true), _) | (_, Some(true)) => Some(true),
+                    (Some(false), Some(false)) => Some(false),
+                    _ => None,
+                }
+            };
+            classify_focus(same_window, same_owner, same_process, official)
         };
         let mut info = LASTINPUTINFO {
             cbSize: std::mem::size_of::<LASTINPUTINFO>() as u32,
@@ -946,13 +1044,82 @@ fn user_activity(h: usize) -> (Option<bool>, Option<u32>) {
         let idle = GetLastInputInfo(&mut info)
             .as_bool()
             .then(|| GetTickCount().wrapping_sub(info.dwTime));
-        (focused, idle)
+        // If foreground changed during the process/owner query, this sample is not reliable.
+        let reason = if GetForegroundWindow() == foreground {
+            reason
+        } else {
+            FocusReason::Unknown
+        };
+        Activity {
+            foreground: foreground.0 as usize,
+            reason,
+            idle,
+        }
     }
+}
+const BACKGROUND_STABLE: Duration = Duration::from_millis(600);
+#[derive(Default)]
+struct FocusGate {
+    background: Option<(usize, Instant)>,
+}
+impl FocusGate {
+    fn decide(&mut self, config: &settings::Config, activity: Activity, now: Instant) -> Delivery {
+        let focused = activity.reason.focused();
+        if focused == Some(false) {
+            if !self
+                .background
+                .is_some_and(|(h, _)| h == activity.foreground)
+            {
+                self.background = Some((activity.foreground, now));
+            }
+        } else {
+            self.background = None;
+        }
+        let result = delivery(
+            &config.notification_mode,
+            focused,
+            activity.idle,
+            config.idle_seconds,
+        );
+        if config.notification_mode != "always"
+            && focused == Some(false)
+            && result == Delivery::Send
+            && !self
+                .background
+                .is_some_and(|(_, since)| now.saturating_duration_since(since) >= BACKGROUND_STABLE)
+        {
+            Delivery::Hold
+        } else {
+            result
+        }
+    }
+}
+fn focus_decision(
+    root: &Path,
+    h: usize,
+    gate: &mut FocusGate,
+    config: &settings::Config,
+    stage: &str,
+    record: bool,
+) -> Delivery {
+    let activity = user_activity(h);
+    let result = gate.decide(config, activity, Instant::now());
+    if record || result != Delivery::Hold {
+        log(
+            root,
+            &format!(
+                "FOCUS stage={stage} mode={} reason={:?} decision={result:?}",
+                config.notification_mode, activity.reason
+            ),
+        );
+    }
+    result
 }
 struct Deferred {
     id: Identity,
     stamp: u64,
     at: Instant,
+    focus: FocusGate,
 }
 struct Watch {
     machine: Machine,
@@ -1051,10 +1218,11 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                         id: a.meta.id.clone(),
                         stamp,
                         at: Instant::now(),
+                        focus: FocusGate::default(),
                     });
                 }
             }
-            if let Some(d) = &state.deferred {
+            if let Some(d) = &mut state.deferred {
                 let still_same = state.anchor.as_ref().is_some_and(|a| a.meta.id == d.id);
                 let resumed = snap.as_ref().is_some_and(|s| s.busy);
                 if !still_same
@@ -1069,12 +1237,13 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                 if ready != Some(true) || snap.is_none() {
                     continue;
                 }
-                let (focused, idle) = user_activity(h);
-                match delivery(
-                    &config.notification_mode,
-                    focused,
-                    idle,
-                    config.idle_seconds,
+                match focus_decision(
+                    root,
+                    h,
+                    &mut d.focus,
+                    &config,
+                    "candidate",
+                    event == Event::Complete,
                 ) {
                     Delivery::Hold => {
                         if event == Event::Complete {
@@ -1089,7 +1258,7 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                     }
                     Delivery::Send => {}
                 }
-                let d = state.deferred.take().unwrap();
+                let mut d = state.deferred.take().unwrap();
                 let stamp = d.stamp;
                 let verified = true;
                 if !shadow {
@@ -1132,13 +1301,8 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                                         .is_some_and(|fresh| fresh.meta.id == a.meta.id)
                                 })
                                 && o.observe(h).ok().flatten().is_some_and(|s| !s.busy);
-                            let (focused, idle) = user_activity(h);
-                            match delivery(
-                                &config.notification_mode,
-                                focused,
-                                idle,
-                                config.idle_seconds,
-                            ) {
+                            let latest = settings::Config::load(root);
+                            match focus_decision(root, h, &mut d.focus, &latest, "prepare", true) {
                                 Delivery::Hold => {
                                     state.deferred = Some(d);
                                     continue;
@@ -1160,10 +1324,39 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                             let launch = click_state
                                 .as_mut()
                                 .and_then(|c| c.issue(root, o, h, exact));
-                            if let Err(e) =
-                                toast(root, false, verified, &preview, launch.as_deref())
-                            {
-                                log(root, &e);
+                            let result = toast_guarded(
+                                root,
+                                false,
+                                verified,
+                                &preview,
+                                launch.as_deref(),
+                                || {
+                                    let latest = settings::Config::load(root);
+                                    if !latest.enabled
+                                        || root.join("stop.flag").exists()
+                                        || native_stamp() > stamp
+                                    {
+                                        log(root, "NOTIFICATION_FINAL_CANCEL");
+                                        return Delivery::Drop;
+                                    }
+                                    focus_decision(root, h, &mut d.focus, &latest, "show", true)
+                                },
+                            );
+                            match result {
+                                Ok(Delivery::Send) => {}
+                                other => {
+                                    if let (Some(c), Some(uri)) =
+                                        (click_state.as_mut(), launch.as_deref())
+                                    {
+                                        c.revoke(uri);
+                                    }
+                                    match other {
+                                        Ok(Delivery::Hold) => state.deferred = Some(d),
+                                        Ok(Delivery::Drop) => log(root, "NOTIFICATION_FINAL_SKIP"),
+                                        Err(e) => log(root, &e),
+                                        Ok(Delivery::Send) => unreachable!(),
+                                    }
+                                }
                             }
                         }
                     }
@@ -1631,6 +1824,112 @@ mod tests {
             Delivery::Send
         );
         assert_eq!(delivery("always", None, None, 10), Delivery::Send);
+    }
+    #[test]
+    fn focus_recognizes_owned_and_other_official_windows() {
+        assert_eq!(
+            classify_focus(true, false, false, None),
+            FocusReason::SameWindow
+        );
+        assert_eq!(
+            classify_focus(false, true, false, None),
+            FocusReason::OwnedWindow
+        );
+        assert_eq!(
+            classify_focus(false, false, true, None),
+            FocusReason::SameProcess
+        );
+        assert_eq!(
+            classify_focus(false, false, false, Some(true)).focused(),
+            Some(true)
+        );
+        assert_eq!(
+            classify_focus(false, false, false, Some(false)).focused(),
+            Some(false)
+        );
+        assert_eq!(classify_focus(false, false, false, None).focused(), None);
+    }
+    #[test]
+    fn background_gate_rejects_transient_switches_and_refocus() {
+        let mut c = settings::Config::default();
+        c.notification_mode = "background".into();
+        let t = Instant::now();
+        let mut gate = FocusGate::default();
+        let sample = |foreground, reason| Activity {
+            foreground,
+            reason,
+            idle: Some(60_000),
+        };
+        assert_eq!(
+            gate.decide(&c, sample(2, FocusReason::OtherApp), t),
+            Delivery::Hold
+        );
+        assert_eq!(
+            gate.decide(
+                &c,
+                sample(2, FocusReason::OtherApp),
+                t + BACKGROUND_STABLE - Duration::from_millis(1)
+            ),
+            Delivery::Hold
+        );
+        assert_eq!(
+            gate.decide(&c, sample(2, FocusReason::OtherApp), t + BACKGROUND_STABLE),
+            Delivery::Send
+        );
+        // Recheck just before submitting: a ChatGPT-owned popup must suppress.
+        assert_eq!(
+            gate.decide(
+                &c,
+                sample(3, FocusReason::OwnedWindow),
+                t + BACKGROUND_STABLE
+            ),
+            Delivery::Drop
+        );
+        assert_eq!(
+            gate.decide(&c, sample(2, FocusReason::OtherApp), t + BACKGROUND_STABLE),
+            Delivery::Hold
+        );
+        assert_eq!(
+            gate.decide(
+                &c,
+                sample(4, FocusReason::OtherApp),
+                t + BACKGROUND_STABLE * 2
+            ),
+            Delivery::Hold
+        );
+        assert_eq!(
+            gate.decide(
+                &c,
+                sample(0, FocusReason::Unknown),
+                t + BACKGROUND_STABLE * 3
+            ),
+            Delivery::Hold
+        );
+        assert_eq!(
+            gate.decide(
+                &c,
+                sample(4, FocusReason::OtherApp),
+                t + BACKGROUND_STABLE * 4
+            ),
+            Delivery::Hold
+        );
+    }
+    #[test]
+    fn smart_and_always_keep_their_intended_policy() {
+        let mut c = settings::Config::default();
+        let t = Instant::now();
+        let mut gate = FocusGate::default();
+        let mut a = Activity {
+            foreground: 1,
+            reason: FocusReason::SameProcess,
+            idle: Some(9999),
+        };
+        assert_eq!(gate.decide(&c, a, t), Delivery::Hold);
+        a.idle = Some(10000);
+        assert_eq!(gate.decide(&c, a, t), Delivery::Send);
+        c.notification_mode = "always".into();
+        a.reason = FocusReason::Unknown;
+        assert_eq!(gate.decide(&c, a, t), Delivery::Send);
     }
     #[test]
     fn preview_filter_and_unicode() {
