@@ -28,6 +28,16 @@ Before claiming broad compatibility, test a clean Windows user or VM and at leas
 
 Only the current Windows 11 Korean x64 host is available for direct testing during preparation. Other environments remain unverified. A clean data directory on the same host is not equivalent to a clean OS or separate computer.
 
+## Smart notification regression tests
+
+- While generating, type a draft for more than the completion grace period: no completion notification before the current reply's completion indicators are present.
+- Focused window, idle below threshold: hold verified completion; send once the threshold is reached or focus moves away.
+- New generation or conversation change while held: discard the stale alert.
+- Background-only mode skips focused completions; Always ignores focus. Test notifications bypass the timing rule.
+- A previously completed turn must not be mistaken for the current response.
+
+State-machine and timing policies have unit tests; live UI variations and independent PCs still require manual validation.
+
 ## Report format
 
 Windows build, app version, UI language, window state, action, expected behavior and actual behavior. Include only reviewed diagnostic logs; no conversation content.

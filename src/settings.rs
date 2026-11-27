@@ -11,6 +11,8 @@ pub(super) struct Config {
     pub language: String,
     pub theme: String,
     pub enabled: bool,
+    pub notification_mode: String,
+    pub idle_seconds: u32,
     pub preview: bool,
     pub length: usize,
     pub navigate: bool,
@@ -24,6 +26,8 @@ impl Default for Config {
             language: "system".into(),
             theme: "system".into(),
             enabled: true,
+            notification_mode: "smart".into(),
+            idle_seconds: 10,
             preview: true,
             length: 100,
             navigate: true,
@@ -58,6 +62,16 @@ impl Config {
                         .and_then(|x| valid_name(x).ok())
                     {
                         c.display_name = name;
+                    }
+                }
+                "notification_mode" => {
+                    if matches!(v, "\"always\"" | "\"background\"" | "\"smart\"") {
+                        c.notification_mode = v.trim_matches('"').into();
+                    }
+                }
+                "idle_seconds" => {
+                    if let Ok(x @ (10 | 30 | 60 | 180)) = v.parse() {
+                        c.idle_seconds = x;
                     }
                 }
                 "enabled" => {
@@ -113,11 +127,13 @@ impl Config {
     }
     fn render(&self) -> String {
         format!(
-            "# ReplyNoti settings\n# Changes take effect without restarting.\ndisplay_name = \"{}\"\nlanguage = \"{}\"\ntheme = \"{}\"\nenabled = {}\npreview = {}\npreview_length = {}\nopen_conversation = {}\nsound = \"{}\"\ncustom_icon = {}\n",
+            "# ReplyNoti settings\n# Changes take effect without restarting.\ndisplay_name = \"{}\"\nlanguage = \"{}\"\ntheme = \"{}\"\nenabled = {}\nnotification_mode = \"{}\"\nidle_seconds = {}\npreview = {}\npreview_length = {}\nopen_conversation = {}\nsound = \"{}\"\ncustom_icon = {}\n",
             self.display_name,
             self.language,
             self.theme,
             self.enabled,
+            self.notification_mode,
+            self.idle_seconds,
             self.preview,
             self.length,
             self.navigate,
@@ -316,7 +332,9 @@ mod tests {
     fn defaults() {
         let c = Config::default();
         assert!(c.enabled && c.preview && c.navigate);
-        assert_eq!(c.length, 100)
+        assert_eq!(c.length, 100);
+        assert_eq!(c.notification_mode, "smart");
+        assert_eq!(c.idle_seconds, 10);
     }
     #[test]
     fn config_roundtrip() {
@@ -325,6 +343,8 @@ mod tests {
             language: "ko".into(),
             theme: "dark".into(),
             enabled: false,
+            notification_mode: "background".into(),
+            idle_seconds: 60,
             preview: false,
             length: 150,
             navigate: false,
@@ -335,7 +355,9 @@ mod tests {
     }
     #[test]
     fn invalid_options() {
-        let c = Config::parse("preview_length=10000\nsound=\"bad\"\npreview=no");
+        let c = Config::parse(
+            "preview_length=10000\nsound=\"bad\"\npreview=no\nnotification_mode=\"bad\"\nidle_seconds=999",
+        );
         assert_eq!(c, Config::default());
     }
     #[test]

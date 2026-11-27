@@ -19,14 +19,14 @@ fn root()->Result<PathBuf,String>{
 }
 #[derive(Serialize,Deserialize)]
 struct Preferences{
- display_name:String,enabled:bool,preview:bool,length:usize,navigate:bool,sound:String,custom_icon:bool,startup:bool,language:String,theme:String,
+ display_name:String,enabled:bool,notification_mode:String,idle_seconds:u32,preview:bool,length:usize,navigate:bool,sound:String,custom_icon:bool,startup:bool,language:String,theme:String,
 }
 #[derive(Serialize)]
 struct State{preferences:Preferences,icon_data:String,has_sound:bool,has_icon:bool}
 fn state(r:&Path)->State{
  let c=settings::Config::load(r);
  let icon=fs::read(c.icon(r,"png")).ok().filter(|b|b.len()<1024*1024).map(|b|format!("data:image/png;base64,{}",STANDARD.encode(b))).unwrap_or_default();
- State{preferences:Preferences{display_name:c.display_name,enabled:c.enabled,preview:c.preview,length:c.length,navigate:c.navigate,sound:c.sound,custom_icon:c.custom_icon,startup:settings::startup(r),language:c.language,theme:c.theme},icon_data:icon,has_sound:r.join("custom-sound.wav").is_file(),has_icon:r.join("custom-icon.png").is_file()&&r.join("custom-icon.ico").is_file()}
+ State{preferences:Preferences{display_name:c.display_name,enabled:c.enabled,notification_mode:c.notification_mode,idle_seconds:c.idle_seconds,preview:c.preview,length:c.length,navigate:c.navigate,sound:c.sound,custom_icon:c.custom_icon,startup:settings::startup(r),language:c.language,theme:c.theme},icon_data:icon,has_sound:r.join("custom-sound.wav").is_file(),has_icon:r.join("custom-icon.png").is_file()&&r.join("custom-icon.ico").is_file()}
 }
 fn set_icon_registration(r:&Path,c:&settings::Config)->Result<(),String>{
  use windows::Win32::System::Registry::{HKEY,KEY_SET_VALUE,REG_SZ,RegOpenKeyExW,RegSetValueExW,RegCloseKey};
@@ -44,10 +44,10 @@ fn load_settings()->Result<State,String>{Ok(state(&root()?))}
 fn save_settings(preferences:Preferences)->Result<State,String>{
  let r=root()?;let mut c=settings::Config::load(&r);
  let name=settings::valid_name(&preferences.display_name)?;
- if !matches!(preferences.length,50|100|150)||!matches!(preferences.sound.as_str(),"default"|"silent"|"custom")||!matches!(preferences.language.as_str(),"system"|"ko"|"en")||!matches!(preferences.theme.as_str(),"system"|"light"|"dark"){return Err("Invalid setting value.".into())}
+ if !matches!(preferences.notification_mode.as_str(),"smart"|"always"|"background")||!matches!(preferences.idle_seconds,10|30|60|180)||!matches!(preferences.length,50|100|150)||!matches!(preferences.sound.as_str(),"default"|"silent"|"custom")||!matches!(preferences.language.as_str(),"system"|"ko"|"en")||!matches!(preferences.theme.as_str(),"system"|"light"|"dark"){return Err("Invalid setting value.".into())}
  if preferences.sound=="custom"&&!r.join("custom-sound.wav").is_file(){return Err("Choose a WAV file first.".into())}
  if preferences.custom_icon&&!(r.join("custom-icon.png").is_file()&&r.join("custom-icon.ico").is_file()){return Err("Choose an icon first.".into())}
- c.display_name=name;c.enabled=preferences.enabled;c.preview=preferences.preview;c.length=preferences.length;c.navigate=preferences.navigate;c.sound=preferences.sound;c.custom_icon=preferences.custom_icon;c.language=preferences.language;c.theme=preferences.theme;
+ c.display_name=name;c.enabled=preferences.enabled;c.notification_mode=preferences.notification_mode;c.idle_seconds=preferences.idle_seconds;c.preview=preferences.preview;c.length=preferences.length;c.navigate=preferences.navigate;c.sound=preferences.sound;c.custom_icon=preferences.custom_icon;c.language=preferences.language;c.theme=preferences.theme;
  settings::set_startup(&r,preferences.startup)?;settings::set_display_name(&c.display_name)?;set_icon_registration(&r,&c)?;c.save(&r).map_err(|_|"Cannot save local preferences.")?;Ok(state(&r))
 }
 #[tauri::command]

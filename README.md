@@ -35,7 +35,8 @@ Screenshots use the settings UI's built-in demo data.
 
 | Feature | Description |
 | --- | --- |
-| Completion notifications | Native Windows toast when generation appears to finish |
+| Completion notifications | Native Windows toast after the tracked reply's completion indicators are confirmed |
+| Smart notifications | Default: notify immediately in the background, or defer while ChatGPT is focused until 10 seconds since the last PC input |
 | Reply preview | Optional 50, 100 or 150 UTF-16 units; on by default |
 | Click to open | Return to the original conversation when it can be safely identified |
 | Notification sound | Windows default, custom WAV, or silent |
@@ -55,6 +56,14 @@ Double-click the tray icon or open ReplyNoti from Start.
 - **General:** choose English, Korean or system language, and start at sign-in.
 
 Select **Save changes** to apply preferences. Only import assets you have permission to use. Official app assets are not distributed with ReplyNoti.
+
+### Notification timing
+
+- **Smart (default):** send when the ChatGPT window is in the background, or when it is focused and the PC has been idle for the chosen threshold (10, 30, 60 or 180 seconds). A verified completion is held until eligible; a new generation, conversation change or five-minute expiry discards the held alert.
+- **Always:** send verified completions regardless of focus.
+- **Background only:** skip alerts when the corresponding ChatGPT window is focused.
+
+Idle time is measured locally using Windows' last-input timestamp; no keystrokes, mouse coordinates or input text are recorded. Test notifications bypass the timing rule. A lack of input may also mean the user is reading, not away.
 
 ## Compatibility and troubleshooting
 

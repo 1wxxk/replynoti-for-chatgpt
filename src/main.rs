@@ -735,6 +735,7 @@ struct Active {
     composer: Vec<i32>,
     anchor: Option<Identity>,
     baseline: u64,
+    seen_unfinished: bool,
     idle: u8,
     pending: Option<Instant>,
 }
@@ -762,7 +763,7 @@ impl Machine {
         anchor: Option<&Context>,
         stamp: u64,
         now: Instant,
-        short_done: bool,
+        ready: Option<bool>,
     ) -> Event {
         let Some(s) = snap else {
             self.prior = None;
@@ -784,8 +785,9 @@ impl Machine {
             if fresh {
                 self.active = Some(Active {
                     composer: s.composer.clone(),
-                    anchor: id,
+                    anchor: id.clone(),
                     baseline: stamp,
+                    seen_unfinished: id.is_some() && ready == Some(false),
                     idle: 0,
                     pending: None,
                 });
@@ -793,7 +795,13 @@ impl Machine {
             }
             let a = self.active.as_mut().unwrap();
             if id.is_some() {
-                a.anchor = id
+                if a.anchor != id {
+                    a.seen_unfinished = false;
+                }
+                a.anchor = id;
+                if ready == Some(false) {
+                    a.seen_unfinished = true;
+                }
             }
             a.idle = 0;
             a.pending = None;
@@ -819,6 +827,21 @@ impl Machine {
             }
             if a.anchor.is_none() && id.is_some() {
                 a.anchor = id.clone()
+            }
+            if id.is_some() && ready == Some(false) {
+                a.seen_unfinished = true;
+            }
+            let new_turn = anchor.is_some_and(|n| {
+                self.prior.as_ref().is_some_and(|p| {
+                    p.transcript == n.id.transcript
+                        && p.user != n.id.user
+                        && n.copies.contains(&p.user)
+                })
+            });
+            if id.is_none() || ready != Some(true) || (!a.seen_unfinished && !new_turn) {
+                a.idle = 0;
+                a.pending = None;
+                return Event::None;
             }
             a.idle = a.idle.saturating_add(1);
             if a.idle < 2 {
@@ -846,7 +869,7 @@ impl Machine {
         }
         // Short response: a new user anchor in the same transcript, after a previously
         // observed idle turn that is still present. The actual reply actions must exist.
-        let short = short_done
+        let short = ready == Some(true)
             && anchor.is_some_and(|n| {
                 self.prior.as_ref().is_some_and(|p| {
                     p.transcript == n.id.transcript
@@ -859,6 +882,7 @@ impl Machine {
                 composer: s.composer.clone(),
                 anchor: id,
                 baseline: self.prior_stamp,
+                seen_unfinished: false,
                 idle: 1,
                 pending: None,
             });
@@ -879,10 +903,55 @@ impl Machine {
             })
     }
 }
+#[derive(Debug, PartialEq, Eq)]
+enum Delivery {
+    Send,
+    Hold,
+    Drop,
+}
+fn delivery(mode: &str, focused: Option<bool>, idle_ms: Option<u32>, threshold: u32) -> Delivery {
+    match (mode, focused) {
+        ("always", _) | (_, Some(false)) => Delivery::Send,
+        ("background", Some(true)) => Delivery::Drop,
+        ("smart", Some(true)) if idle_ms.is_some_and(|ms| ms >= threshold * 1000) => Delivery::Send,
+        _ => Delivery::Hold,
+    }
+}
+fn user_activity(h: usize) -> (Option<bool>, Option<u32>) {
+    use windows::Win32::{
+        System::SystemInformation::GetTickCount,
+        UI::{
+            Input::KeyboardAndMouse::{GetLastInputInfo, LASTINPUTINFO},
+            WindowsAndMessaging::GetForegroundWindow,
+        },
+    };
+    unsafe {
+        let foreground = GetForegroundWindow();
+        let focused = if foreground.0.is_null() {
+            None
+        } else {
+            Some(foreground.0 as usize == h)
+        };
+        let mut info = LASTINPUTINFO {
+            cbSize: std::mem::size_of::<LASTINPUTINFO>() as u32,
+            dwTime: 0,
+        };
+        let idle = GetLastInputInfo(&mut info)
+            .as_bool()
+            .then(|| GetTickCount().wrapping_sub(info.dwTime));
+        (focused, idle)
+    }
+}
+struct Deferred {
+    id: Identity,
+    stamp: u64,
+    at: Instant,
+}
 struct Watch {
     machine: Machine,
     anchor: Option<Anchor>,
     checked: Instant,
+    deferred: Option<Deferred>,
 }
 fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> Result<()> {
     let start = Instant::now();
@@ -923,6 +992,7 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                 machine: Machine::default(),
                 anchor: None,
                 checked: t - Duration::from_secs(2),
+                deferred: None,
             });
             let snap = match o.observe(h) {
                 Ok(x) => x,
@@ -946,33 +1016,75 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
             } else {
                 state.anchor = None
             }
-            let short = snap.as_ref().is_some_and(|s| !s.busy)
-                && state
+            let track = snap.as_ref().is_some_and(|s| s.busy)
+                || state.machine.active.is_some()
+                || state.deferred.is_some()
+                || state
                     .machine
-                    .short_candidate(state.anchor.as_ref().map(|a| &a.meta))
-                && state
-                    .anchor
-                    .as_ref()
-                    .is_some_and(|a| o.answer_ready(a).unwrap_or(false));
+                    .short_candidate(state.anchor.as_ref().map(|a| &a.meta));
+            let ready = if track {
+                state.anchor.as_ref().and_then(|a| o.answer_ready(a).ok())
+            } else {
+                None
+            };
             let event = state.machine.sample(
                 snap.as_ref(),
                 state.anchor.as_ref().map(|a| &a.meta),
                 stamp,
                 Instant::now(),
-                short,
+                ready,
             );
             if event != Event::None {
                 log(root, &format!("STATE {:?} hwnd={h}", event))
             }
             if event == Event::Complete {
-                let verified = state
-                    .anchor
-                    .as_ref()
-                    .is_some_and(|a| o.answer_ready(a).unwrap_or(false));
-                log(
-                    root,
-                    &format!("GENERATION_ENDED verified={verified} hwnd={h}"),
-                );
+                log(root, &format!("GENERATION_ENDED verified=true hwnd={h}"));
+                if let Some(a) = state.anchor.as_ref() {
+                    state.deferred = Some(Deferred {
+                        id: a.meta.id.clone(),
+                        stamp,
+                        at: Instant::now(),
+                    });
+                }
+            }
+            if let Some(d) = &state.deferred {
+                let still_same = state.anchor.as_ref().is_some_and(|a| a.meta.id == d.id);
+                let resumed = snap.as_ref().is_some_and(|s| s.busy);
+                if !still_same
+                    || resumed
+                    || d.at.elapsed() >= Duration::from_secs(300)
+                    || stamp > d.stamp
+                {
+                    state.deferred = None;
+                    log(root, "DEFERRED_DISCARDED");
+                    continue;
+                }
+                if ready != Some(true) || snap.is_none() {
+                    continue;
+                }
+                let (focused, idle) = user_activity(h);
+                match delivery(
+                    &config.notification_mode,
+                    focused,
+                    idle,
+                    config.idle_seconds,
+                ) {
+                    Delivery::Hold => {
+                        if event == Event::Complete {
+                            log(root, "NOTIFICATION_DEFERRED");
+                        }
+                        continue;
+                    }
+                    Delivery::Drop => {
+                        state.deferred = None;
+                        log(root, "NOTIFICATION_FOCUSED_SKIP");
+                        continue;
+                    }
+                    Delivery::Send => {}
+                }
+                let d = state.deferred.take().unwrap();
+                let stamp = d.stamp;
+                let verified = true;
                 if !shadow {
                     // Recheck native stamp to reduce races between completion and display.
                     if native_stamp() > stamp {
@@ -1013,6 +1125,31 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                                         .is_some_and(|fresh| fresh.meta.id == a.meta.id)
                                 })
                                 && o.observe(h).ok().flatten().is_some_and(|s| !s.busy);
+                            let (focused, idle) = user_activity(h);
+                            match delivery(
+                                &config.notification_mode,
+                                focused,
+                                idle,
+                                config.idle_seconds,
+                            ) {
+                                Delivery::Hold => {
+                                    state.deferred = Some(d);
+                                    continue;
+                                }
+                                Delivery::Drop => {
+                                    log(root, "NOTIFICATION_FOCUSED_SKIP");
+                                    continue;
+                                }
+                                Delivery::Send => {}
+                            }
+                            if !o.observe(h).ok().flatten().is_some_and(|s| !s.busy)
+                                || !o.context(h).ok().flatten().is_some_and(|a| {
+                                    a.meta.id == d.id && o.answer_ready(&a).unwrap_or(false)
+                                })
+                            {
+                                state.deferred = Some(d);
+                                continue;
+                            }
                             let launch = click_state
                                 .as_mut()
                                 .and_then(|c| c.issue(root, o, h, exact));
@@ -1026,7 +1163,10 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
                 }
             }
         }
-        let interval = if states.values().any(|s| s.machine.active.is_some()) {
+        let interval = if states
+            .values()
+            .any(|s| s.machine.active.is_some() || s.deferred.is_some())
+        {
             BUSY_POLL
         } else {
             IDLE_POLL
@@ -1256,7 +1396,13 @@ mod tests {
         }
     }
     fn tick(m: &mut Machine, busy: bool, stamp: u64, t: Instant) -> Event {
-        m.sample(Some(&snap(busy)), None, stamp, t, false)
+        m.sample(
+            Some(&snap(busy)),
+            Some(&ctx(1, 1, &[1])),
+            stamp,
+            t,
+            Some(!busy),
+        )
     }
     #[test]
     fn complete_once() {
@@ -1294,7 +1440,7 @@ mod tests {
         let mut m = Machine::default();
         let t = Instant::now();
         tick(&mut m, true, 10, t);
-        assert_eq!(m.sample(None, None, 10, t, false), Event::Reset);
+        assert_eq!(m.sample(None, None, 10, t, None), Event::Reset);
         tick(&mut m, true, 10, t);
         assert_eq!(
             m.sample(
@@ -1305,7 +1451,7 @@ mod tests {
                 None,
                 10,
                 t,
-                false
+                Some(true)
             ),
             Event::Reset
         );
@@ -1326,15 +1472,15 @@ mod tests {
         let a = ctx(1, 1, &[1]);
         let b = ctx(2, 2, &[2]);
         assert_eq!(
-            m.sample(Some(&snap(true)), Some(&a), 10, t, false),
+            m.sample(Some(&snap(true)), Some(&a), 10, t, Some(false)),
             Event::Busy
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t, Some(true)),
             Event::Reset
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, Some(true)),
             Event::None
         );
     }
@@ -1344,22 +1490,22 @@ mod tests {
         let t = Instant::now();
         let a = ctx(1, 1, &[1]);
         let b = ctx(1, 2, &[1, 2]);
-        m.sample(Some(&snap(true)), Some(&a), 10, t, false);
-        m.sample(Some(&snap(true)), Some(&b), 10, t, false);
+        m.sample(Some(&snap(true)), Some(&a), 10, t, Some(false));
+        m.sample(Some(&snap(true)), Some(&b), 10, t, Some(false));
         assert_eq!(
-            m.sample(Some(&snap(false)), None, 10, t, false),
+            m.sample(Some(&snap(false)), None, 10, t, Some(true)),
             Event::None
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t, Some(true)),
             Event::None
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t, Some(true)),
             Event::Pending
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, Some(true)),
             Event::Complete
         );
     }
@@ -1369,21 +1515,115 @@ mod tests {
         let t = Instant::now();
         let a = ctx(1, 1, &[1]);
         let b = ctx(1, 2, &[1, 2]);
-        m.sample(Some(&snap(false)), Some(&a), 10, t, false);
+        m.sample(Some(&snap(false)), Some(&a), 10, t, Some(true));
         assert!(m.short_candidate(Some(&b)));
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t, true),
+            m.sample(Some(&snap(false)), Some(&b), 10, t, Some(true)),
             Event::Short
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t, Some(true)),
             Event::Pending
         );
         assert_eq!(
-            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, false),
+            m.sample(Some(&snap(false)), Some(&b), 10, t + GRACE, Some(true)),
             Event::Complete
         );
         assert!(!m.short_candidate(Some(&b)));
+    }
+    #[test]
+    fn typing_does_not_complete_unfinished_reply() {
+        let mut m = Machine::default();
+        let t = Instant::now();
+        let a = ctx(1, 1, &[1]);
+        assert_eq!(
+            m.sample(Some(&snap(true)), Some(&a), 0, t, Some(false)),
+            Event::Busy
+        );
+        for sec in 1..=20 {
+            assert_eq!(
+                m.sample(
+                    Some(&snap(false)),
+                    Some(&a),
+                    0,
+                    t + Duration::from_secs(sec),
+                    Some(false)
+                ),
+                Event::None
+            );
+        }
+        assert_eq!(
+            m.sample(
+                Some(&snap(false)),
+                Some(&a),
+                0,
+                t + Duration::from_secs(21),
+                Some(true)
+            ),
+            Event::None
+        );
+        assert_eq!(
+            m.sample(
+                Some(&snap(false)),
+                Some(&a),
+                0,
+                t + Duration::from_secs(22),
+                Some(true)
+            ),
+            Event::Pending
+        );
+        assert_eq!(
+            m.sample(
+                Some(&snap(false)),
+                Some(&a),
+                0,
+                t + Duration::from_secs(24),
+                Some(true)
+            ),
+            Event::Complete
+        );
+    }
+    #[test]
+    fn previous_completed_turn_is_not_new_completion() {
+        let mut m = Machine::default();
+        let t = Instant::now();
+        let a = ctx(1, 1, &[1]);
+        m.sample(Some(&snap(false)), Some(&a), 0, t, Some(true));
+        m.sample(Some(&snap(true)), Some(&a), 0, t, Some(true));
+        for sec in 1..=5 {
+            assert_eq!(
+                m.sample(
+                    Some(&snap(false)),
+                    Some(&a),
+                    0,
+                    t + Duration::from_secs(sec),
+                    Some(true)
+                ),
+                Event::None
+            );
+        }
+    }
+    #[test]
+    fn smart_delivery_policy() {
+        assert_eq!(
+            delivery("smart", Some(true), Some(9999), 10),
+            Delivery::Hold
+        );
+        assert_eq!(
+            delivery("smart", Some(true), Some(10000), 10),
+            Delivery::Send
+        );
+        assert_eq!(delivery("smart", Some(false), Some(0), 10), Delivery::Send);
+        assert_eq!(delivery("smart", Some(true), None, 10), Delivery::Hold);
+        assert_eq!(
+            delivery("background", Some(true), Some(60000), 10),
+            Delivery::Drop
+        );
+        assert_eq!(
+            delivery("background", Some(false), None, 10),
+            Delivery::Send
+        );
+        assert_eq!(delivery("always", None, None, 10), Delivery::Send);
     }
     #[test]
     fn preview_filter_and_unicode() {

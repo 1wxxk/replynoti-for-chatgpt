@@ -8,6 +8,10 @@ Local logs contain events, error codes, timestamps and window IDs, not prompts o
 
 The implementation is unofficial. Users should review the applicable service terms; status observation and optional automated excerpt extraction are not official integrations or assurances of policy compliance. Review applicable terms before using previews. Avoid using preview features where automated extraction is prohibited.
 
+## Smart notification timing
+
+The watcher checks the foreground window handle and the Windows last-input timestamp locally. It does not record individual keyboard or mouse events, input contents, or input history. Deferred alerts retain only the tracked turn identity and timestamps in memory, expire after five minutes, and are not persisted.
+
 ## Notification activation
 
 To reopen a conversation, the watcher reads the selected sidebar title and its accessibility runtime ID, retaining them in memory for up to five minutes. Temporary one-time ticket files contain only the window handle and process ID; they contain no conversation title, reply, or durable conversation ID. Clicking a notification invokes the per-user replynoti-open handler. Invalid or expired tokens are rejected. Draft checks inspect composer values locally only when attempting navigation, without storing or transmitting them. Navigation is skipped if the current conversation cannot be safely changed. Windows foreground activation is best effort.

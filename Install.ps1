@@ -58,7 +58,7 @@ try {
  if($Preview -and $NoPreview){throw 'Choose either -Preview or -NoPreview.'}
  Write-Warning "Reply previews are enabled by default. They may appear on the lock screen and in notification history. Filtering is best effort. Use -NoPreview or turn previews off in Settings."
  $previewValue=(!$NoPreview).ToString().ToLowerInvariant()
- @('display_name = "ReplyNoti"','language = "system"','theme = "system"',"enabled = true","preview = $previewValue","preview_length = 100","open_conversation = true",'sound = "default"',"custom_icon = false") | Set-Content -LiteralPath (Join-Path $root 'config.toml') -Encoding ASCII
+ @('display_name = "ReplyNoti"','language = "system"','theme = "system"',"enabled = true",'notification_mode = "smart"',"idle_seconds = 10","preview = $previewValue","preview_length = 100","open_conversation = true",'sound = "default"',"custom_icon = false") | Set-Content -LiteralPath (Join-Path $root 'config.toml') -Encoding ASCII
  Copy-Item -LiteralPath $src -Destination $dest
  $settingsSource=Join-Path $PSScriptRoot 'replynoti-settings.exe'
  if(!(Test-Path -LiteralPath $settingsSource)){$settingsSource=Join-Path $PSScriptRoot 'settings-ui\src-tauri\target\release\replynoti-settings.exe'}
