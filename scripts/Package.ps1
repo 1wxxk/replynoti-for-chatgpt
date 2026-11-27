@@ -7,7 +7,7 @@ if(Test-Path $stage){throw 'Existing staging folder: remove it manually before p
 New-Item -ItemType Directory -Path $stage|Out-Null
 Copy-Item -LiteralPath (Join-Path $root 'target\release\replynoti.exe') -Destination $stage
 Copy-Item -LiteralPath (Join-Path $root 'settings-ui\src-tauri\target\release\replynoti-settings.exe') -Destination $stage
-foreach($name in @('Install.ps1','Install.cmd','Uninstall.ps1','Uninstall.cmd','replynoti.svg','replynoti.ico','replynoti.png','README.md','README.ko.md','LICENSE','THIRD_PARTY_NOTICES.txt')){
+foreach($name in @('Install.ps1','Install.cmd','Uninstall.ps1','Uninstall.cmd','replynoti.svg','replynoti.ico','replynoti.png','README.md','README.en.md','LICENSE','THIRD_PARTY_NOTICES.txt')){
  Copy-Item -LiteralPath (Join-Path $root $name) -Destination $stage
 }
 Copy-Item -LiteralPath (Join-Path $root 'docs') -Destination $stage -Recurse
