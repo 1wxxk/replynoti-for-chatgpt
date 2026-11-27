@@ -1,6 +1,6 @@
 <p align="center"><img src="replynoti.png" width="96" alt="ReplyNoti logo"></p>
 <h1 align="center">ReplyNoti</h1>
-<p align="center"><strong>Your reply is ready.</strong><br>Get a Windows notification when ChatGPT stops generating.</p>
+<p align="center"><strong>Your reply is ready.</strong><br>Get a Windows notification when ChatGPT Chat stops generating.</p>
 <p align="center">English · <a href="README.ko.md">한국어</a></p>
 <p align="center">
 <a href="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
