@@ -1,6 +1,6 @@
 <p align="center"><img src="replynoti.png" width="96" alt="ReplyNoti logo"></p>
 <h1 align="center">ReplyNoti</h1>
-<p align="center"><strong>Your reply is ready.</strong><br>Get a Windows notification when ChatGPT Chat stops generating.</p>
+<p align="center"><strong>Your reply is ready.</strong><br>Get notified when the ChatGPT Windows desktop app finishes generating a reply in Chat mode.</p>
 <p align="center">English · <a href="README.md">한국어</a></p>
 <p align="center">
 <a href="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
@@ -12,6 +12,10 @@
 Start a reply, switch to another task, and let ReplyNoti tell you when generation appears to end. No API key, extra account, or browser extension required.
 
 > **Unofficial, experimental beta.** Not affiliated with or endorsed by OpenAI. ReplyNoti is a separate Windows utility, not a replacement ChatGPT client. Detection is best effort.
+
+> [!IMPORTANT]
+> **ReplyNoti is exclusively for the ChatGPT Windows desktop app.**
+> Only Chat mode in the installed official app is supported. Browser-based ChatGPT (chatgpt.com), macOS and mobile apps, and Codex mode are not supported.
 
 ## Download
 
@@ -41,7 +45,7 @@ Settings screenshots use the actual UI with built-in demo data. The installer sc
 
 ## Quick start
 
-**Requirements:** Windows 11 x64, the installed ChatGPT desktop app (unified OpenAI.Codex package, Chat mode), and WebView2 for the modern settings window.
+**Requirements:** Windows 11 x64, the installed **ChatGPT Windows desktop app** (unified OpenAI.Codex package, Chat mode), and WebView2 for the modern settings window.
 
 1. Download and run the Setup EXE above. Start with Windows is optional.
 2. If you chose Portable ZIP, extract the entire archive and run Start-Portable.exe.

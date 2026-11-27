@@ -1,6 +1,6 @@
 <p align="center"><img src="replynoti.png" width="96" alt="ReplyNoti 로고"></p>
 <h1 align="center">ReplyNoti</h1>
-<p align="center"><strong>답변이 준비되면 알려드립니다.</strong><br>ChatGPT Chat 응답 생성이 끝나면 Windows 알림을 보내는 작은 유틸리티입니다.</p>
+<p align="center"><strong>답변이 준비되면 알려드립니다.</strong><br>ChatGPT Windows 데스크톱 앱의 Chat 모드에서 답변 생성이 끝나면 알림을 보내는 유틸리티입니다.</p>
 <p align="center"><a href="README.en.md">English</a> · 한국어</p>
 <p align="center">
 <a href="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
@@ -12,6 +12,10 @@
 ChatGPT Chat에 질문한 뒤 답변이 끝날 때까지 기다릴 필요 없습니다. 다른 작업을 하다가 알림이 오면 확인하세요. 별도 계정, API 키, 브라우저 확장 프로그램이 필요하지 않습니다.
 
 > **비공식 실험적 베타입니다.** OpenAI와 제휴하거나 지원받는 공식 제품이 아닙니다. 기존 ChatGPT 앱을 대체하지 않으며, 감지가 항상 정확한 것은 아닙니다.
+
+> [!IMPORTANT]
+> **ReplyNoti는 ChatGPT Windows 데스크톱 앱 전용입니다.**
+> 설치된 공식 앱의 Chat 모드만 지원합니다. 웹 브라우저(chatgpt.com), macOS 및 모바일 앱, Codex 모드는 지원하지 않습니다.
 
 ## 다운로드
 
@@ -41,7 +45,7 @@ Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로
 
 ## 빠른 시작
 
-**필요 환경:** Windows 11 x64, 설치된 ChatGPT 데스크톱 앱(통합 OpenAI.Codex 패키지의 Chat 모드), 최신 설정창용 WebView2.
+**필요 환경:** Windows 11 x64, 설치된 **ChatGPT Windows 데스크톱 앱**(통합 OpenAI.Codex 패키지의 Chat 모드), 최신 설정창용 WebView2.
 
 1. 위 설치형 EXE를 다운로드하고 실행합니다. 자동 시작 여부를 선택할 수 있습니다.
 2. 포터블 ZIP을 선택했다면 전체 압축을 푼 뒤 Start-Portable.exe를 실행합니다.
