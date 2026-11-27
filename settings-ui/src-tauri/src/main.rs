@@ -14,7 +14,9 @@ fn reg_value(app:&str,name:&str,qword:bool)->Option<u64>{
  if code.0==0{Some(val)}else{None}
 }
 fn root()->Result<PathBuf,String>{
- let root=PathBuf::from(env::var_os("LOCALAPPDATA").ok_or("LOCALAPPDATA unavailable")?).join("ReplyNoti");
+ let exe=env::current_exe().map_err(|_|"Executable path unavailable")?;
+ let dir=exe.parent().ok_or("Executable directory unavailable")?;
+ let root=if dir.join("portable.flag").is_file(){dir.to_path_buf()}else{PathBuf::from(env::var_os("LOCALAPPDATA").ok_or("LOCALAPPDATA unavailable")?).join("ReplyNoti")};
  if !root.join(".replynoti-install").is_file(){return Err("ReplyNoti must be installed first.".into())}Ok(root)
 }
 #[derive(Serialize,Deserialize)]

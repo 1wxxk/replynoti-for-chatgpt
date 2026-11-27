@@ -163,6 +163,13 @@ const IDLE_POLL: Duration = Duration::from_millis(800);
 const BUSY_POLL: Duration = Duration::from_millis(200);
 
 fn root_path() -> PathBuf {
+    if let Ok(exe) = env::current_exe() {
+        if let Some(dir) = exe.parent() {
+            if dir.join("portable.flag").is_file() {
+                return dir.to_path_buf();
+            }
+        }
+    }
     PathBuf::from(env::var_os("LOCALAPPDATA").expect("LOCALAPPDATA")).join("ReplyNoti")
 }
 fn log(root: &Path, msg: &str) {
@@ -965,7 +972,7 @@ fn monitor(root: &Path, o: &Observer, shadow: bool, limit: Option<Duration>) -> 
     log(
         root,
         &format!(
-            "START mode={} pid={} v0.1.0-beta.7",
+            "START mode={} pid={} v0.1.0-beta.8",
             if shadow { "shadow" } else { "production" },
             std::process::id()
         ),

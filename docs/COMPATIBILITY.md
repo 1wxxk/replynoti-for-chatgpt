@@ -65,3 +65,7 @@ The private predecessor passed a manual A → B → A test on the current host. 
 ## Installed asset import beta.5
 
 Known resources in the publisher-identified unified Windows package are supported. Missing package or changed resource filenames return an error and retain manual file selection. No guarantee of compatibility with future app updates or of matching the currently selected native sound.
+
+## Beta.8 distribution
+
+EXE and portable registration flows passed isolated-name smoke tests on the development host. Independent clean Windows 11 PC, live notification and GUI installer visual tests remain unverified. Portable mode stores settings beside the executables; Windows notification and shortcut registration are still required.

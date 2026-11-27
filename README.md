@@ -3,7 +3,7 @@
 <p align="center"><strong>Your reply is ready.</strong><br>Get a Windows notification when ChatGPT Chat stops generating.</p>
 <p align="center">English · <a href="README.ko.md">한국어</a></p>
 <p align="center">
-<a href="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
+<a href="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
 <img src="https://img.shields.io/badge/Windows-11%20x64-3265E6" alt="Windows 11 x64">
 <img src="https://img.shields.io/badge/status-experimental%20beta-orange" alt="Experimental beta">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
@@ -12,6 +12,12 @@
 Start a reply, switch to another task, and let ReplyNoti tell you when generation appears to end. No API key, extra account, or browser extension required.
 
 > **Unofficial, experimental beta.** Not affiliated with or endorsed by OpenAI. ReplyNoti is a separate Windows utility, not a replacement ChatGPT client. Detection is best effort.
+
+## Download
+
+[**Windows Setup EXE (recommended)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Setup-x64.exe) · [Portable ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Portable-x64.zip) · [Release notes](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.8)
+
+Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution. Verify [SHA-256 checksums](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/SHA256SUMS.txt) and respect your system security policy. No Rust or Node.js installation is needed.
 
 ## Preview
 
@@ -25,11 +31,15 @@ Screenshots use the settings UI's built-in demo data.
 
 **Requirements:** Windows 11 x64, the installed ChatGPT desktop app (unified OpenAI.Codex package, Chat mode), and WebView2 for the modern settings window.
 
-1. Build the app using [Build from source](#build-from-source). This is a source-first beta; a downloadable installer is not yet published.
-2. Review the install scripts, then run `Install.cmd` or `.\Install.ps1` in PowerShell.
+1. Download and run the Setup EXE above. Start with Windows is optional.
+2. If you chose Portable ZIP, extract the entire archive and run Start-Portable.exe.
 3. Open ChatGPT desktop and send a message.
 4. Switch to another app. ReplyNoti watches for the end of generation and displays a Windows notification.
 5. Right-click the tray icon and choose **Test notification** to check sound and notifications, or double-click it to open Settings.
+
+### Portable usage
+
+App files and settings stay in the extracted folder. The first launch registers the Windows notification identity, Start menu shortcut and local click-to-open protocol. Run Unregister-Portable.exe before moving or deleting the folder. Do not register installed and portable copies simultaneously. If WebView2 is missing, install it from [Microsoft](https://developer.microsoft.com/microsoft-edge/webview2/).
 
 ## Features
 
@@ -88,7 +98,7 @@ See [privacy and scope](docs/PRIVACY.md).
 Use Windows 11 x64, Rust stable (MSVC), Visual Studio C++ Build Tools, a Windows SDK, Node.js 22+ and WebView2. Run in PowerShell:
 
 ```powershell
-git clone https://github.com/1wxxk/replynoti.git
+git clone https://github.com/1wxxk/replynoti-for-chatgpt.git
 cd replynoti
 cargo test --release --locked
 cargo build --release --locked
@@ -111,11 +121,11 @@ Exit the tray app or run the installed uninstaller. Back up any local assets you
 & "$env:LOCALAPPDATA\ReplyNoti\Uninstall.ps1"
 ```
 
-The uninstaller removes managed files, local settings and assets, startup registration and protocol handler. It does not modify the official ChatGPT app. Windows may retain prior notifications. To upgrade, uninstall the previous beta before reinstalling.
+The uninstaller removes managed files, local settings and assets, startup registration and protocol handler. It does not modify the official ChatGPT app. Windows may retain prior notifications. To upgrade the installed version, run the new Setup EXE; it preserves preferences and custom assets. Remove via Windows Settings → Apps → Installed apps. For the portable edition, run Unregister-Portable.exe before deleting the folder.
 
 ## Contributing
 
-Report bugs through [Issues](https://github.com/1wxxk/replynoti/issues). Include Windows build, ChatGPT app version, UI language, expected and actual behavior. Do not share prompts, replies or unreviewed logs. Contributions are welcome.
+Report bugs through [Issues](https://github.com/1wxxk/replynoti-for-chatgpt/issues). Include Windows build, ChatGPT app version, UI language, expected and actual behavior. Do not share prompts, replies or unreviewed logs. Contributions are welcome.
 
 ## License
 

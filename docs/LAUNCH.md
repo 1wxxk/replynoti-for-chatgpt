@@ -38,7 +38,7 @@ ChatGPT Windows 앱에서 답변 완료 알림이 누락되는 불편함을 해�
 
 ## Distribution
 
-The initial GitHub repository is source-only. Before distributing binaries, complete the license inventory for the Tauri Rust dependency tree and verify all third-party notices are included. CI intentionally builds without uploading packaged binaries until these release gates are met.
+Beta.8 adds a per-user NSIS Setup EXE and a ZIP with portable registration and cleanup launchers. Both are unsigned prerelease binaries. An isolated registration-namespace smoke test passed fresh install, upgrade preserving settings and assets, uninstall, portable registration conflict, repeated portable start, and unregister. Independent clean Windows 11 PCs and live notification end-to-end tests remain pending. The existing build-only CI does not publish release artifacts automatically.
 
 Keep the initial release marked prerelease. Use GitHub Releases with SHA-256 checksums and report the binary is unsigned. Do not suggest disabling SmartScreen or organization security policies. Announce in relevant communities only where self-promotion is permitted; avoid unsolicited or repetitive posts.
 

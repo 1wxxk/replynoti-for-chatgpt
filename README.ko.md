@@ -3,7 +3,7 @@
 <p align="center"><strong>답변이 준비되면 알려드립니다.</strong><br>ChatGPT Chat 응답 생성이 끝나면 Windows 알림을 보내는 작은 유틸리티입니다.</p>
 <p align="center"><a href="README.md">English</a> · 한국어</p>
 <p align="center">
-<a href="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
+<a href="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml"><img src="https://github.com/1wxxk/replynoti-for-chatgpt/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
 <img src="https://img.shields.io/badge/Windows-11%20x64-3265E6" alt="Windows 11 x64">
 <img src="https://img.shields.io/badge/status-experimental%20beta-orange" alt="실험적 베타">
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT"></a>
@@ -12,6 +12,12 @@
 ChatGPT Chat에 질문한 뒤 답변이 끝날 때까지 기다릴 필요 없습니다. 다른 작업을 하다가 알림이 오면 확인하세요. 별도 계정, API 키, 브라우저 확장 프로그램이 필요하지 않습니다.
 
 > **비공식 실험적 베타입니다.** OpenAI와 제휴하거나 지원받는 공식 제품이 아닙니다. 기존 ChatGPT 앱을 대체하지 않으며, 감지가 항상 정확한 것은 아닙니다.
+
+## 다운로드
+
+[**Windows 설치형 EXE (권장)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Setup-x64.exe) · [포터블 ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/ReplyNoti-Portable-x64.zip) · [릴리스 노트](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.8)
+
+Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로 Windows 보안 경고가 나타나거나 실행이 차단될 수 있습니다. [SHA-256](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.8/SHA256SUMS.txt)으로 무결성을 확인하고 시스템 보안 정책을 준수하세요. 일반 사용자는 Rust나 Node.js 설치가 필요 없습니다.
 
 ## 화면 미리보기
 
@@ -25,13 +31,17 @@ ChatGPT Chat에 질문한 뒤 답변이 끝날 때까지 기다릴 필요 없습
 
 **필요 환경:** Windows 11 x64, 설치된 ChatGPT 데스크톱 앱(통합 OpenAI.Codex 패키지의 Chat 모드), 최신 설정창용 WebView2.
 
-1. [소스에서 빌드](#소스에서-빌드) 안내대로 빌드합니다. 현재는 소스 공개 베타이며 다운로드용 설치 파일은 아직 배포하지 않았습니다.
-2. 설치 스크립트를 검토한 후 `Install.cmd`를 실행하거나 PowerShell에서 `.\Install.ps1`을 실행합니다.
+1. 위 설치형 EXE를 다운로드하고 실행합니다. 자동 시작 여부를 선택할 수 있습니다.
+2. 포터블 ZIP을 선택했다면 전체 압축을 푼 뒤 Start-Portable.exe를 실행합니다.
 3. ChatGPT 데스크톱 앱에서 질문을 보냅니다.
 4. 답변이 생성되는 동안 다른 작업을 합니다.
 5. 생성 종료로 판단되면 Windows 알림이 표시됩니다.
 
 작업 표시줄 알림 영역의 ReplyNoti 아이콘을 우클릭해 **테스트 알림**을 실행하세요. 아이콘을 더블 클릭하면 설정창이 열립니다.
+
+### 포터블 사용법
+
+앱 파일과 설정은 압축을 푼 폴더에 유지합니다. Windows 알림, 시작 메뉴, 대화 이동에 필요한 사용자별 등록은 수행합니다. 폴더를 옮기거나 삭제하기 전 Unregister-Portable.exe를 실행하세요. 설치형과 포터블은 동시에 등록할 수 없습니다. WebView2가 없다면 [공식 Microsoft 페이지](https://developer.microsoft.com/microsoft-edge/webview2/)에서 설치하세요.
 
 ## 주요 기능
 
@@ -90,7 +100,7 @@ Windows 11 x64의 일반적인 콘솔 세션, 알려진 한국어·영어 접근
 Windows 11 x64, Rust stable(MSVC), Visual Studio C++ Build Tools, Windows SDK, Node.js 22 이상, WebView2가 필요합니다. PowerShell에서 실행하세요.
 
 ```powershell
-git clone https://github.com/1wxxk/replynoti.git
+git clone https://github.com/1wxxk/replynoti-for-chatgpt.git
 cd replynoti
 cargo test --release --locked
 cargo build --release --locked
@@ -113,11 +123,11 @@ cd ../..
 & "$env:LOCALAPPDATA\ReplyNoti\Uninstall.ps1"
 ```
 
-삭제 스크립트는 관리 대상 파일, 설정, 가져온 리소스, 자동 실행 등록, 프로토콜 처리기를 제거합니다. 공식 ChatGPT 앱은 변경하지 않습니다. 이전 Windows 알림 기록은 남을 수 있습니다. 업데이트 시 이전 베타를 삭제한 뒤 새 버전을 설치하세요.
+삭제 스크립트는 관리 대상 파일, 설정, 가져온 리소스, 자동 실행 등록, 프로토콜 처리기를 제거합니다. 공식 ChatGPT 앱은 변경하지 않습니다. 이전 Windows 알림 기록은 남을 수 있습니다. 설치형 업데이트는 새 Setup EXE를 실행하면 기존 설정과 사용자 지정 아이콘·알림음을 보존합니다. Windows 설정 → 앱 → 설치된 앱에서 ReplyNoti를 삭제할 수 있습니다. 포터블은 Unregister-Portable.exe로 등록을 해제한 뒤 폴더를 삭제하세요.
 
 ## 기여 및 버그 제보
 
-[Issues](https://github.com/1wxxk/replynoti/issues)에 Windows 빌드, ChatGPT 앱 버전, UI 언어, 재현 순서와 예상·실제 동작을 남겨주세요. 대화 내용이나 확인하지 않은 로그는 첨부하지 마세요.
+[Issues](https://github.com/1wxxk/replynoti-for-chatgpt/issues)에 Windows 빌드, ChatGPT 앱 버전, UI 언어, 재현 순서와 예상·실제 동작을 남겨주세요. 대화 내용이나 확인하지 않은 로그는 첨부하지 마세요.
 
 ## 라이선스
 
