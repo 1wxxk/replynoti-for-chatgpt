@@ -77,3 +77,7 @@ Background-only mode treats the watched window, its owned windows, the same proc
 ## Beta.9 visual and installer changes
 
 The application icon is a new scalable, original chat-bubble and notification-dot design. The native NSIS installer consolidates the options into one branded screen, keeping the fixed per-user path. Fresh installs can choose reply previews and startup; upgrades preserve preferences and custom assets unless startup is explicitly changed. The UI was captured on an isolated desktop. Clean install, settings-preserving upgrade, uninstall and portable registration smoke tests passed with a separate identity. Live notification regression testing on another PC remains pending.
+
+## Beta.10 installer and icon
+
+The branded WPF setup UI uses the settings application's light/dark palette, rounded controls, and a 512-pixel icon source instead of the old scaled NSIS bitmap. The same NSIS installation and removal scripts remain responsible for registration and settings-preserving upgrades. Interactive setup options (startup enabled and previews disabled) passed a separate-identity Windows smoke test; silent upgrade, uninstall, and portable registration also passed. The actual setup executable was visually captured on an isolated desktop. Additional display scaling and independent Windows PC testing remain pending. The icon is a stroke-based vector with a taller bubble and nine ICO resolutions (16–256 px).

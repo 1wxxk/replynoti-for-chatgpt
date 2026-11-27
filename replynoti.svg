@@ -1,18 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
-  <title>ReplyNoti - reply notifications</title>
-  <defs>
-    <linearGradient id="tile" x1="0" y1="0" x2=".85" y2="1">
-      <stop stop-color="#303B50"/><stop offset=".48" stop-color="#19212F"/><stop offset="1" stop-color="#111720"/>
-    </linearGradient>
-    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
-      <stop stop-color="#8493AB"/><stop offset=".46" stop-color="#46536A"/><stop offset="1" stop-color="#245DDA"/>
-    </linearGradient>
-    <linearGradient id="dot" x1="0" y1="0" x2=".7" y2="1">
-      <stop stop-color="#4888FF"/><stop offset="1" stop-color="#1958F5"/>
-    </linearGradient>
-  </defs>
-  <rect x="7" y="7" width="242" height="242" rx="58" fill="url(#tile)" stroke="url(#rim)" stroke-width="4"/>
-  <path d="M155 78H103C76 78 62 92 62 118V181L91 159H151C177 159 191 145 191 119V112"
-        fill="none" stroke="#F1F5FA" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="189" cy="77" r="23" fill="url(#dot)" stroke="#6395FF" stroke-width="2"/>
+<title>ReplyNoti</title>
+<rect x="8" y="8" width="240" height="240" rx="56" fill="#1B2433"/>
+<rect x="10" y="10" width="236" height="236" rx="54" fill="none" stroke="#53647D" stroke-width="4"/>
+<path d="M140 65H106C80 65 62 84 62 110V197L96 170H148C175 170 193 152 193 125V113" fill="none" stroke="#F3F6FC" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+<circle cx="190" cy="67" r="25" fill="#4381FF"/>
 </svg>

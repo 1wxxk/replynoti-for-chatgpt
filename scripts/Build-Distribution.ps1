@@ -8,7 +8,7 @@ $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 if(!$EnginePath){$EnginePath=Join-Path $root 'target\release\replynoti.exe'}
 if(!$SettingsPath){$SettingsPath=Join-Path $root 'settings-ui\src-tauri\target\release\replynoti-settings.exe'}
-if(!$OutputDirectory){$OutputDirectory=Join-Path $root 'dist\0.1.0-beta.9'}
+if(!$OutputDirectory){$OutputDirectory=Join-Path $root 'dist\0.1.0-beta.10'}
 if(Test-Path $OutputDirectory){throw 'Output directory already exists; choose a fresh output directory.'}
 New-Item -ItemType Directory -Path $OutputDirectory|Out-Null
 $out=(Resolve-Path $OutputDirectory).Path
@@ -20,7 +20,7 @@ Copy-Item -LiteralPath $SettingsPath -Destination (Join-Path $payload 'replynoti
 foreach($n in @('replynoti.png','replynoti.ico','Install.ps1','Uninstall.ps1','Uninstall.cmd','LICENSE','THIRD_PARTY_NOTICES.txt')){
  Copy-Item -LiteralPath (Join-Path $root $n) -Destination $payload
 }
-Copy-Item -LiteralPath (Join-Path $root 'installer\setup-header.bmp') -Destination $payload
+foreach($n in @('SetupUI.ps1','setup-icon.png')){Copy-Item -LiteralPath (Join-Path $root ('installer\'+$n)) -Destination $payload}
 $nsisRoot=Split-Path $Makensis -Parent
 Copy-Item -LiteralPath (Join-Path $nsisRoot 'COPYING') -Destination (Join-Path $payload 'NSIS-LICENSE.txt')
 function Build-NSIS($script,$destination,[switch]$Unregister){

@@ -15,9 +15,9 @@ Start a reply, switch to another task, and let ReplyNoti tell you when generatio
 
 ## Download
 
-[**Windows Setup EXE (recommended)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Setup-x64.exe) · [Portable ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/ReplyNoti-Portable-x64.zip) · [Release notes](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.9)
+[**Windows Setup EXE (recommended)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/ReplyNoti-Setup-x64.exe) · [Portable ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/ReplyNoti-Portable-x64.zip) · [Release notes](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.10)
 
-Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution. Verify [SHA-256 checksums](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.9/SHA256SUMS.txt) and respect your system security policy. No Rust or Node.js installation is needed.
+Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution. Verify [SHA-256 checksums](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/SHA256SUMS.txt) and respect your system security policy. No Rust or Node.js installation is needed.
 
 ## Preview
 
@@ -35,7 +35,7 @@ Experimental Windows 11 x64 beta. Unsigned: Windows may warn or block execution.
 
 ### Installer
 
-<p align="center"><img src="docs/screenshots/installer-ko.png" width="668" alt="ReplyNoti installer options"></p>
+<p align="center"><img src="docs/screenshots/installer-ko.png" width="740" alt="ReplyNoti installer options"></p>
 
 Settings screenshots use the actual UI with built-in demo data. The installer screenshot shows the real upgrade options.
 
