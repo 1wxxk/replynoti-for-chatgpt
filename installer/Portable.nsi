@@ -14,10 +14,10 @@ RequestExecutionLevel user
 SilentInstall silent
 SetCompressor /SOLID zlib
 Icon "${PAYLOAD}\replynoti.ico"
-VIProductVersion "0.1.0.10"
+VIProductVersion "0.1.0.11"
 VIAddVersionKey /LANG=1033 "ProductName" "ReplyNoti"
 VIAddVersionKey /LANG=1033 "FileDescription" "ReplyNoti Portable launcher"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.1.0-beta.10"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.1.0-beta.11"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "ReplyNoti contributors"
 Section
  ${IfNot} ${RunningX64}

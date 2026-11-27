@@ -46,7 +46,7 @@ function Register-Uninstall {
  $u=Join-Path $root 'Uninstall.exe'
  if(!(Test-Path $u)){return}
  New-Item -Path $arp -Force|Out-Null
- $properties=@{DisplayName='ReplyNoti';DisplayVersion='0.1.0-beta.10';Publisher='ReplyNoti contributors';InstallLocation=$root;DisplayIcon=(Join-Path $root 'replynoti.ico');UninstallString=('"'+$u+'"');QuietUninstallString=('"'+$u+'" /S');URLInfoAbout='https://github.com/1wxxk/replynoti-for-chatgpt'}
+ $properties=@{DisplayName='ReplyNoti';DisplayVersion='0.1.0-beta.11';Publisher='ReplyNoti contributors';InstallLocation=$root;DisplayIcon=(Join-Path $root 'replynoti.ico');UninstallString=('"'+$u+'"');QuietUninstallString=('"'+$u+'" /S');URLInfoAbout='https://github.com/1wxxk/replynoti-for-chatgpt'}
  foreach($k in $properties.Keys){New-ItemProperty -Path $arp -Name $k -Value $properties[$k] -PropertyType String -Force|Out-Null}
  foreach($k in @('NoModify','NoRepair')){New-ItemProperty -Path $arp -Name $k -Value 1 -PropertyType DWord -Force|Out-Null}
 }

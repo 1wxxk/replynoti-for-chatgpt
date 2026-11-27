@@ -81,3 +81,7 @@ The application icon is a new scalable, original chat-bubble and notification-do
 ## Beta.10 installer and icon
 
 The branded WPF setup UI uses the settings application's light/dark palette, rounded controls, and a 512-pixel icon source instead of the old scaled NSIS bitmap. The same NSIS installation and removal scripts remain responsible for registration and settings-preserving upgrades. Interactive setup options (startup enabled and previews disabled) passed a separate-identity Windows smoke test; silent upgrade, uninstall, and portable registration also passed. The actual setup executable was visually captured on an isolated desktop. Additional display scaling and independent Windows PC testing remain pending. The icon is a stroke-based vector with a taller bubble and nine ICO resolutions (16–256 px).
+
+## Beta.11 icon rendering
+
+The dimensional SVG master is used at 40 px and above, including the 512 px installer logo and 256 px app/notification PNG. The simplified, thicker-stroke SVG is rendered directly at 16, 20, 24, and 32 px for small Windows ICO frames. The reproducible Build-Icons.ps1 pipeline synchronizes the app and installer assets. Both masters were audited and the resulting ICO frames visually checked. Additional independent-PC and display-scaling validation remains pending.

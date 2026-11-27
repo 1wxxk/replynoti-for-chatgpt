@@ -13,7 +13,7 @@
 !endif
 Name "ReplyNoti"
 Caption "ReplyNoti"
-BrandingText "ReplyNoti  ·  v0.1.0-beta.10"
+BrandingText "ReplyNoti  ·  v0.1.0-beta.11"
 OutFile "${OUTPUT}"
 InstallDir "$LOCALAPPDATA\ReplyNoti"
 RequestExecutionLevel user
@@ -22,10 +22,10 @@ ShowInstDetails nevershow
 SilentInstall normal
 SetFont "Segoe UI" 10
 ShowUninstDetails show
-VIProductVersion "0.1.0.10"
+VIProductVersion "0.1.0.11"
 VIAddVersionKey /LANG=1033 "ProductName" "ReplyNoti"
 VIAddVersionKey /LANG=1033 "FileDescription" "ReplyNoti Windows Setup"
-VIAddVersionKey /LANG=1033 "FileVersion" "0.1.0-beta.10"
+VIAddVersionKey /LANG=1033 "FileVersion" "0.1.0-beta.11"
 VIAddVersionKey /LANG=1033 "LegalCopyright" "ReplyNoti contributors"
 !define MUI_ICON "${PAYLOAD}\replynoti.ico"
 !define MUI_UNICON "${PAYLOAD}\replynoti.ico"

@@ -15,9 +15,9 @@ ChatGPT Chat에 질문한 뒤 답변이 끝날 때까지 기다릴 필요 없습
 
 ## 다운로드
 
-[**Windows 설치형 EXE (권장)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/ReplyNoti-Setup-x64.exe) · [포터블 ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/ReplyNoti-Portable-x64.zip) · [릴리스 노트](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.10)
+[**Windows 설치형 EXE (권장)**](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.11/ReplyNoti-Setup-x64.exe) · [포터블 ZIP](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.11/ReplyNoti-Portable-x64.zip) · [릴리스 노트](https://github.com/1wxxk/replynoti-for-chatgpt/releases/tag/v0.1.0-beta.11)
 
-Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로 Windows 보안 경고가 나타나거나 실행이 차단될 수 있습니다. [SHA-256](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.10/SHA256SUMS.txt)으로 무결성을 확인하고 시스템 보안 정책을 준수하세요. 일반 사용자는 Rust나 Node.js 설치가 필요 없습니다.
+Windows 11 x64용 비공식 베타입니다. 코드 서명되지 않았으므로 Windows 보안 경고가 나타나거나 실행이 차단될 수 있습니다. [SHA-256](https://github.com/1wxxk/replynoti-for-chatgpt/releases/download/v0.1.0-beta.11/SHA256SUMS.txt)으로 무결성을 확인하고 시스템 보안 정책을 준수하세요. 일반 사용자는 Rust나 Node.js 설치가 필요 없습니다.
 
 ## 화면 미리보기
 

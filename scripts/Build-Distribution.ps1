@@ -8,7 +8,7 @@ $ErrorActionPreference='Stop'
 $root=Split-Path $PSScriptRoot -Parent
 if(!$EnginePath){$EnginePath=Join-Path $root 'target\release\replynoti.exe'}
 if(!$SettingsPath){$SettingsPath=Join-Path $root 'settings-ui\src-tauri\target\release\replynoti-settings.exe'}
-if(!$OutputDirectory){$OutputDirectory=Join-Path $root 'dist\0.1.0-beta.10'}
+if(!$OutputDirectory){$OutputDirectory=Join-Path $root 'dist\0.1.0-beta.11'}
 if(Test-Path $OutputDirectory){throw 'Output directory already exists; choose a fresh output directory.'}
 New-Item -ItemType Directory -Path $OutputDirectory|Out-Null
 $out=(Resolve-Path $OutputDirectory).Path

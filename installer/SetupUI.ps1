@@ -68,7 +68,7 @@ $xaml=@'
     <Border Background="{DynamicResource Panel}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0">
      <StackPanel Margin="23,30,23,26">
       <Image x:Name="Logo" Width="88" Height="88" HorizontalAlignment="Left" Margin="0,0,0,19" RenderOptions.BitmapScalingMode="HighQuality"/>
-      <TextBlock Text="ReplyNoti" FontSize="25" FontWeight="Bold"/><TextBlock Text="v0.1.0-beta.10" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,7,0,0"/>
+      <TextBlock Text="ReplyNoti" FontSize="25" FontWeight="Bold"/><TextBlock Text="v0.1.0-beta.11" FontSize="12" Foreground="{DynamicResource Muted}" Margin="0,7,0,0"/>
       <Border Height="1" Background="{DynamicResource Line}" Margin="0,24,0,22"/>
       <TextBlock x:Name="Unofficial" Foreground="{DynamicResource AccentText}" FontSize="13" FontWeight="SemiBold"/>
       <TextBlock x:Name="Privacy" Foreground="{DynamicResource Muted}" FontSize="12" Margin="0,10,0,0" LineHeight="19"/>

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <title>ReplyNoti small icon</title>
+  <rect x="6" y="6" width="244" height="244" rx="54" fill="#1B2433" stroke="#7389A8" stroke-width="8"/>
+  <path d="M138 65H106C80 65 62 84 62 110V197L96 170H148C175 170 193 152 193 125V113" fill="none" stroke="#F3F6FC" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="190" cy="67" r="27" fill="#4381FF"/>
+</svg>
